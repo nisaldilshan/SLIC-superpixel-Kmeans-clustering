@@ -3,62 +3,68 @@ close all;
 
 image = imread('bee.jpg');
 
-image_decor=decorrstretch(image);
+original_image= rgb2hsv(image);
+adjusted_image=decorrstretch(image);
 subplot(1,2,1);
 imshow(image);
 subplot(1,2,2);
-imshow(image_decor);
+imshow(adjusted_image);
+saveas(gcf,'output\Original_Kmeans/original.tif','tiff');
 
-temp_img = image_decor;
-image = rgb2hsv(image_decor);
+temp_img = adjusted_image;
+image = rgb2hsv(adjusted_image);
 depth = size(image,3);
 resh_img = reshape(image,[],depth);
+original_resh_img = reshape(original_image,[],depth);
 
 k =4;
-positions=[];
 points = [];
-iter_lim = 10;
-meanpoint_plot=zeros(iter_lim,k,depth);
+N = 10;
+meanpoint_plot=zeros(N,k,depth);
 
-for i = (1:k)
-    positions = [positions; uint16(ginput(1))];
-    temp_img = insertMarker(temp_img,[positions(i,1) positions(i,2)],'size',8);
-    points =[points; reshape(image(positions(i,2),positions(i,1),:),1,[])];
-    imshow(temp_img);
+cluster_points = uint16(ginput(k));
+for i = (1:k)    
+    points =[points; reshape(image(cluster_points(i,2),cluster_points(i,1),:),1,[])];
 end
 
 %k-means clustering
 mean_points = points;
+original_points = points;
+ori_mean_points = points;
 clusters =zeros(k,size(image,1),size(image,2));
-%basic clustering
 
-for iter = (1:iter_lim)
+
+for iteration = (1:N)
     %distance calculation
     for i = (1:k)
-       distance2 = abs(double(image)-double(mean_points(i)));
+       dist = abs(double(image)-double(mean_points(i)));
        distance = zeros(size(image,1),size(image,2));
-       for j = (1:size(distance2,depth)-2)       %drop intentsity details at the end for better results
-        distance = distance + double(distance2(:,:,j).^2);
+       for j = (1:size(dist,depth)-2)       
+        distance = distance + double(dist(:,:,j).^2);
        end
        clusters(i,:,:)=distance;
     end
 
-    %select minimum distance
-    min_dist = clusters(1,:,:);
+    %calculate minimum distance matrix
+    minimum_distance = clusters(1,:,:);
     for i = (2:k)
-        min_dist = min(min_dist,clusters(i,:,:));
+        minimum_distance = min(minimum_distance,clusters(i,:,:));
     end
 
     segmentations = zeros(k,size(image,1)*size(image,2),depth);
+    ori_segmentations = zeros(k,size(image,1)*size(image,2),depth);
     ind={};
     for i = (1:k)
-        ind{i} = find(min_dist==clusters(i,:,:));
+        ind{i} = find(minimum_distance==clusters(i,:,:));
         index = double(ind{i});
         segmentations(i,index,:) = resh_img(index,:);
+        ori_segmentations(i,index,:) = original_resh_img(index,:);
         mean_points(i,:) = mean(resh_img(index,:));
+        ori_mean_points(i,:) = mean(original_resh_img(index,:));
     end
     
-    meanpoint_plot(iter,:,:) = mean_points;
+    %update mean points table to be plot
+    meanpoint_plot(iteration,:,:) = mean_points;
 end
 
 
@@ -88,34 +94,36 @@ subplot(4,3,11);
 plot(meanpoint_plot(:,4,2),'g');
 subplot(4,3,12);
 plot(meanpoint_plot(:,4,3),'b');
+saveas(gcf,'output\Original_Kmeans/plot.tif','tiffn');
 
 segment = zeros(size(image,1),size(image,2),depth);
 
-mosaic = zeros(size(image,1)*size(image,2),depth);
+segmented_image = zeros(size(image,1)*size(image,2),depth);
 
 for i = (1:k) 
     figure;
     segment = reshape(segmentations(i,:,:),size(image,1),size(image,2),depth);  
     picture=hsv2rgb(segment);
     imshow(picture);
+    saveas(gcf,['output\Original_Kmeans/cluster' num2str(i) '.tif'],'tiff');
     
     index = double(ind{i});    
     for j = (1:depth)
-        mosaic(index,j)=mean_points(i,j);
+        segmented_image(index,j)=mean_points(i,j);
     end  
     
 end
 
 
-mosaic = reshape(mosaic,size(image,1),size(image,2),depth);
+segmented_image = reshape(segmented_image,size(image,1),size(image,2),depth);
 
 
 for j=1:size(image,2)-1
     for i=1:size(image,1)-1
-        if mosaic(i,j) ~= mosaic(i+1,j)
-            mosaic(i,j,3) = 0;
-        elseif mosaic(i,j) ~= mosaic(i,j+1)
-            mosaic(i,j,3) = 0;
+        if segmented_image(i,j) ~= segmented_image(i+1,j)
+            segmented_image(i,j,3) = 0;
+        elseif segmented_image(i,j) ~= segmented_image(i,j+1)
+            segmented_image(i,j,3) = 0;
         end
         
     end
@@ -123,4 +131,5 @@ end
 
 
 figure;
-imshow(hsv2rgb(mosaic));
+imshow(hsv2rgb(segmented_image));
+saveas(gcf,'output\Original_Kmeans/Segmented.tif','tiff');
