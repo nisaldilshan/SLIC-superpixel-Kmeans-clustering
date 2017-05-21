@@ -2,36 +2,31 @@ close all;
 
 image= B;
 
-image_decor=decorrstretch(image);
+original_image= rgb2hsv(image);
+adjusted_image=decorrstretch(image);
 subplot(1,2,1);
 imshow(image);
 subplot(1,2,2);
-imshow(image_decor);
+imshow(adjusted_image);
+saveas(gcf,'output\superpixel_clustering/original.tif','tiff')
 
-temp_img = image_decor;
-image = rgb2hsv(image_decor);
+image = rgb2hsv(adjusted_image);
 depth = size(image,3);
-resh_img = reshape(image,[],depth);
+reshaped_img = reshape(image,[],depth);
+original_reshaped_img = reshape(original_image,[],depth);
 
 k =4;
-positions=[];
 points = [];
-iter_lim = 10;
-meanpoint_plot=zeros(iter_lim,k,depth);
+N = 10;
+meanpoint_plot=zeros(N,k,depth);
 
-for i = (1:k)
-    positions = [positions; uint16(ginput(1))];
-    temp_img = insertMarker(temp_img,[positions(i,1) positions(i,2)],'size',8);
-    points =[points; reshape(image(positions(i,2),positions(i,1),:),1,[])];
-    imshow(temp_img);
-end
 
 %k-means clustering
-mean_points = points;
-clusters =zeros(k,size(image,1),size(image,2));
-%basic clustering
+mean_points = original_points;
 
-for iter = (1:iter_lim)
+clusters =zeros(k,size(image,1),size(image,2));
+
+for iteration = (1:N)
     %distance calculation
     for i = (1:k)
        distance2 = abs(double(image)-double(mean_points(i)));
@@ -42,7 +37,7 @@ for iter = (1:iter_lim)
        clusters(i,:,:)=distance;
     end
 
-    %select minimum distance
+    %calculate minimum distance matrix
     min_dist = clusters(1,:,:);
     for i = (2:k)
         min_dist = min(min_dist,clusters(i,:,:));
@@ -53,11 +48,11 @@ for iter = (1:iter_lim)
     for i = (1:k)
         ind{i} = find(min_dist==clusters(i,:,:));
         index = double(ind{i});
-        segmentations(i,index,:) = resh_img(index,:);
-        mean_points(i,:) = mean(resh_img(index,:));
+        segmentations(i,index,:) = reshaped_img(index,:);
+        mean_points(i,:) = mean(reshaped_img(index,:));
     end
-    
-    meanpoint_plot(iter,:,:) = mean_points;
+    %update mean points table to be plot
+    meanpoint_plot(iteration,:,:) = mean_points;
 end
 
 
@@ -90,29 +85,30 @@ plot(meanpoint_plot(:,4,3),'b');
 
 segment = zeros(size(image,1),size(image,2),depth);
 
-mosaic = zeros(size(image,1)*size(image,2),depth);
+segmented_image = zeros(size(image,1)*size(image,2),depth);
 for i = (1:k) 
     figure;
     segment = reshape(segmentations(i,:,:),size(image,1),size(image,2),depth);  
     picture=hsv2rgb(segment);
     imshow(picture);
+    saveas(gcf,['output\superpixel_clustering/original' num2str(i) '.tif'],'tiff')
     
     index = double(ind{i});    
     for j = (1:depth)
-        mosaic(index,j)=mean_points(i,j);
+        segmented_image(index,j)=mean_points(i,j);
     end  
     
 end
 
 
-mosaic = reshape(mosaic,size(image,1),size(image,2),depth);
+segmented_image = reshape(segmented_image,size(image,1),size(image,2),depth);
 
 for j=1:size(image,2)-1
     for i=1:size(image,1)-1
-        if mosaic(i,j) ~= mosaic(i+1,j)
-            mosaic(i,j,3) = 0;
-        elseif mosaic(i,j) ~= mosaic(i,j+1)
-            mosaic(i,j,3) = 0;
+        if segmented_image(i,j) ~= segmented_image(i+1,j)
+            segmented_image(i,j,3) = 0;
+        elseif segmented_image(i,j) ~= segmented_image(i,j+1)
+            segmented_image(i,j,3) = 0;
         end
         
     end
@@ -120,4 +116,5 @@ end
 
 
 figure;
-imshow(hsv2rgb(mosaic));
+imshow(hsv2rgb(segmented_image));
+saveas(gcf,'output\superpixel_clustering/segmented.tif','tiff')

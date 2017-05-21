@@ -1,5 +1,5 @@
 close all;
-clear all;
+%clear all;
 
 run('C:\VLfeat\vlfeat-0.9.20\toolbox/vl_setup')
 
@@ -12,7 +12,7 @@ imlab = vl_xyz2lab(vl_rgb2xyz(im1)) ;
 
 imlab1 = im2single(imlab);
 
-segments = vl_slic(im1, 10, 0.5) ;
+segments = vl_slic(im1, 25, 0.5) ;
 
 N = max(max(segments));
 sumR=0;
@@ -108,16 +108,20 @@ SLICborder_draw = im2uint8(SLICborder_draw);
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-subplot(2,2,1);
+
 imshow (im);
-subplot(2,2,2);
+figure;
 imshow (A);
-subplot(2,2,3);
+saveas(gcf,'output\SLIC_superpixels/boundaries.tif','tiff');
+figure
 imshow (B);
+saveas(gcf,'output\SLIC_superpixels/pixeled.tif','tiff');
 %subplot(2,2,4);
 %imshow(pixel_labels,[]));
 
 figure;
 imshow (imborder_draw);
+saveas(gcf,'output\SLIC_superpixels/original_boundary.tif','tiff');
 figure;
 imshow (SLICborder_draw);
+saveas(gcf,'output\SLIC_superpixels/SLIC_boundary.tif','tiff');
