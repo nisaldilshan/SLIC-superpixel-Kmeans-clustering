@@ -1,7 +1,6 @@
-clear all;
 close all;
 
-image = imread('bee.jpg');
+image= B;
 
 image_decor=decorrstretch(image);
 subplot(1,2,1);
@@ -92,7 +91,6 @@ plot(meanpoint_plot(:,4,3),'b');
 segment = zeros(size(image,1),size(image,2),depth);
 
 mosaic = zeros(size(image,1)*size(image,2),depth);
-
 for i = (1:k) 
     figure;
     segment = reshape(segmentations(i,:,:),size(image,1),size(image,2),depth);  
@@ -108,7 +106,6 @@ end
 
 
 mosaic = reshape(mosaic,size(image,1),size(image,2),depth);
-
 
 for j=1:size(image,2)-1
     for i=1:size(image,1)-1

@@ -3,7 +3,7 @@ clear all;
 
 run('C:\VLfeat\vlfeat-0.9.20\toolbox/vl_setup')
 
-im = imread('white.jpg');
+im = imread('bee.jpg');
 imborder_draw = im;
 im1 = im2single(im);
 imd = im2double(im);
@@ -12,7 +12,7 @@ imlab = vl_xyz2lab(vl_rgb2xyz(im1)) ;
 
 imlab1 = im2single(imlab);
 
-segments = vl_slic(im1, 30, 0.1) ;
+segments = vl_slic(im1, 10, 0.5) ;
 
 N = max(max(segments));
 sumR=0;
