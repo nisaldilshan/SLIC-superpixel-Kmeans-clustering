@@ -12,7 +12,7 @@ imlab = vl_xyz2lab(vl_rgb2xyz(im1)) ;
 
 imlab1 = im2single(imlab);
 
-segments = vl_slic(im1, 25, 0.5) ;
+segments = vl_slic(im1, 10, 0.5) ;
 
 N = max(max(segments));
 sumR=0;
@@ -112,16 +112,16 @@ SLICborder_draw = im2uint8(SLICborder_draw);
 imshow (im);
 figure;
 imshow (A);
-saveas(gcf,'output\SLIC_superpixels/boundaries.tif','tiff');
+saveas(gcf,'output\SLIC_superpixels/boundaries.tif','tiffn');
 figure
 imshow (B);
-saveas(gcf,'output\SLIC_superpixels/pixeled.tif','tiff');
+saveas(gcf,'output\SLIC_superpixels/pixeled.tif','tiffn');
 %subplot(2,2,4);
 %imshow(pixel_labels,[]));
 
 figure;
 imshow (imborder_draw);
-saveas(gcf,'output\SLIC_superpixels/original_boundary.tif','tiff');
+saveas(gcf,'output\SLIC_superpixels/original_boundary.tif','tiffn');
 figure;
 imshow (SLICborder_draw);
-saveas(gcf,'output\SLIC_superpixels/SLIC_boundary.tif','tiff');
+saveas(gcf,'output\SLIC_superpixels/SLIC_boundary.tif','tiffn');
