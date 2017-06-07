@@ -132,4 +132,4 @@ end
 
 figure;
 imshow(hsv2rgb(segmented_image));
-saveas(gcf,'output\Original_Kmeans/Segmented.tif','tiff');
+saveas(gcf,'output\Original_Kmeans/Segmented.tif','tiffn');

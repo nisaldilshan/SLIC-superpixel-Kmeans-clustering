@@ -82,6 +82,7 @@ subplot(4,3,11);
 plot(meanpoint_plot(:,4,2),'g');
 subplot(4,3,12);
 plot(meanpoint_plot(:,4,3),'b');
+saveas(gcf,'output\superpixel_clustering/plot.tif','tiffn');
 
 segment = zeros(size(image,1),size(image,2),depth);
 
@@ -117,4 +118,4 @@ end
 
 figure;
 imshow(hsv2rgb(segmented_image));
-saveas(gcf,'output\superpixel_clustering/segmented.tif','tiff')
+saveas(gcf,'output\superpixel_clustering/segmented.tif','tiffn')
